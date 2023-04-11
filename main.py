@@ -57,7 +57,7 @@ project_user = db.Table("project_user",
 class User(UserMixin, db.Model):
     __tablename__ = "user"
     id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(250), nullable=False)
+    name = db.Column(db.String(250), nullable=False, unique=True)
     email = db.Column(db.String(250), unique=True, nullable=False)
     password = db.Column(db.String(250), nullable=False)
     bugs = relationship("Bug", back_populates="assigned")
@@ -78,7 +78,7 @@ class Comment(db.Model):
 class Project(db.Model):
     __tablename__ = "project"
     id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(250), nullable=False)
+    name = db.Column(db.String(250), nullable=False, unique=True)
     users = db.relationship("User", secondary=project_user, back_populates="projects")
 
 
