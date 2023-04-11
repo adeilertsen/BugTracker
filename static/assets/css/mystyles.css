@@ -1,0 +1,16 @@
+.comment-text {
+    font-size: 14px;
+    margin-top: 1rem;
+    margin-bottom: 0;
+}
+
+.comment-author {
+    color: grey;
+    margin-bottom: 0.5rem;
+    font-size: 12px;
+}
+
+.comment-div {
+    padding: 1rem;
+
+}
