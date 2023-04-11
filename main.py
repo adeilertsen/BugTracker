@@ -38,11 +38,11 @@ class Bug(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String(250), nullable=False)
     description = db.Column(db.String(250), nullable=False)
-    reporter = db.Column(db.Integer, db.ForeignKey("user.name"))
+    reporter = db.Column(db.String, db.ForeignKey("user.name"))
     date = db.Column(db.String(250), nullable=False)
     status = db.Column(db.Integer, nullable=False)
     priority = db.Column(db.String(250), nullable=False)
-    project_id = db.Column(db.Integer, db.ForeignKey("project.name"))
+    project_id = db.Column(db.String, db.ForeignKey("project.name"))
 
     comment = relationship("Comment", back_populates="parent_bug")
     assigned = relationship("User", back_populates="bugs")
@@ -69,7 +69,7 @@ class Comment(db.Model):
     __tablename__ = "comment"
     id = db.Column(db.Integer, primary_key=True)
     text = db.Column(db.Text, nullable=False)
-    author_id = db.Column(db.Integer, db.ForeignKey("user.name"))
+    author_id = db.Column(db.String, db.ForeignKey("user.name"))
     bug_id = db.Column(db.Integer, db.ForeignKey("bug.id"))
     comment_author = relationship("User", back_populates="comments")
     parent_bug = relationship("Bug", back_populates="comment")
