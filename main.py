@@ -9,15 +9,16 @@ from wtforms.validators import DataRequired
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_gravatar import Gravatar
 from datetime import date
+import os
 
 
 app = Flask(__name__)
-app.config['SECRET_KEY'] = '8BYkEfBA6O6donzWlSihBXox7C0sKR6b'
+app.config['SECRET_KEY'] = os.environ.get("SECRET_KEY")
 
 Bootstrap(app)
 
 db = SQLAlchemy()
-app.config["SQLALCHEMY_DATABASE_URI"] = 'sqlite:///bugtracker.db'
+app.config["SQLALCHEMY_DATABASE_URI"] = os.environ.get("DATABASE_URL", 'sqlite:///bugtracker.db' )
 db.init_app(app)
 
 lm = LoginManager()
