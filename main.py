@@ -233,4 +233,5 @@ def status_change(bug_id):
     return redirect(url_for("bug", index=bug_id))
 
 
-app.run(debug=True)
+if __name__ == "__main__":
+    app.run(host='0.0.0.0', port=5000)
