@@ -13,7 +13,7 @@ import os
 
 
 app = Flask(__name__)
-app.config['SECRET_KEY'] = os.environ.get("SECRET_KEY")
+app.config['SECRET_KEY'] = os.environ.get("SECRET_KEY", "8BYkEfBA6O6donzWlSihBXox7C0sKR6b")
 
 Bootstrap(app)
 
@@ -113,10 +113,10 @@ class CommentForm(FlaskForm):
 def home():
     bugs_data = db.session.query(Bug).all()
     for user in db.session.query(User).all():
-        if user not in ASSIGN:
+        if user.name not in ASSIGN:
             ASSIGN.append(user.name)
     for project in db.session.query(Project).all():
-        if project not in PROJECT:
+        if project.name not in PROJECT:
             PROJECT.append(project.name)
     form = NewBugForm()
     if form.validate_on_submit():
