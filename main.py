@@ -112,6 +112,12 @@ class CommentForm(FlaskForm):
 @app.route("/", methods=["GET", "POST"])
 def home():
     bugs_data = db.session.query(Bug).all()
+    for user in db.session.query(User).all():
+        if user not in ASSIGN:
+            ASSIGN.append(user.name)
+    for project in db.session.query(Project).all():
+        if project not in PROJECT:
+            PROJECT.append(project.name)
     form = NewBugForm()
     if form.validate_on_submit():
         new_bug = Bug(
