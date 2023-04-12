@@ -240,7 +240,9 @@ def create_projects():
     project1 = Project(name="BugTracker")
     project2 = Project(name="MyPortfolio")
     project3 = Project(name="Test")
-    db.session.add(project1, project2, project3)
+    db.session.add(project1)
+    db.session.add(project2)
+    db.session.add(project3)
     db.session.commit()
     return redirect(url_for("home"))
 
