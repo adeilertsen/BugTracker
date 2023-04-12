@@ -126,7 +126,9 @@ def home():
         )
         db.session.add(new_bug)
         db.session.commit()
+        print("entry successfull")
         return redirect(url_for("home"))
+    print("nothing yet")
     return render_template("index.html", form=form, logged_in=current_user.is_authenticated, bugs=bugs_data)
 
 
