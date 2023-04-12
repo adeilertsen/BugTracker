@@ -235,6 +235,14 @@ def status_change(bug_id):
     db.session.commit()
     return redirect(url_for("bug", index=bug_id))
 
+@app.route("/projects", methods=["GET", "POST"])
+def create_projects():
+    project1 = Project(name="BugTracker")
+    project2 = Project(name="MyPortfolio")
+    project3 = Project(name="Test")
+    db.session.add(project1, project2, project3)
+    db.session.commit()
+    return redirect(url_for("home"))
 
 if __name__ == "__main__":
     app.run(host='0.0.0.0', port=5000)
