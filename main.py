@@ -177,6 +177,7 @@ def login():
 
 @app.route("/bug/<int:index>", methods=["GET", "POST"])
 def bug(index):
+    bugs_data = db.session.query(Bug).all()
     bug = Bug.query.get(index)
     comment_form = CommentForm()
     comments = db.session.query(Comment).filter_by(bug_id=index)
@@ -209,7 +210,7 @@ def bug(index):
         db.session.commit()
         return redirect(url_for("bug", index=index))
     return render_template("bug.html", bug=bug, form=edit_form, comment_form=comment_form, comments=comments,
-                           logged_in=current_user.is_authenticated)
+                           logged_in=current_user.is_authenticated, bugs=bugs_data)
 
 
 @app.route("/delete/<int:bug_id>")

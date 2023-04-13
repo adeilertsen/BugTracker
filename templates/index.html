@@ -7,100 +7,100 @@
 
 {% include "navbar.html" %}
 
-  <main id="main" class="main">
+<main id="main" class="main">
 
-<!-- Start Page Title -->
+  <!-- Start Page Title -->
 
-    <div class="pagetitle">
-      <div class="row">
-          <div class="col-6">
-              <h1>Main Page</h1>
-          </div>
-          {% if logged_in %}
-          <div class="col-6 d-flex justify-content-end">
-              <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#staticBackdrop">
-                  Register new bug
-              </button>
+  <div class="pagetitle">
+    <div class="row">
+      <div class="col-6">
+        <h1>Main Page</h1>
+      </div>
+      {% if logged_in %}
+      <div class="col-6 d-flex justify-content-end">
+        <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#staticBackdrop">
+          Register new bug
+        </button>
 
-              <!-- Modal -->
-              <div class="modal fade" id="staticBackdrop" data-bs-backdrop="static" data-bs-keyboard="false"
-                   tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
-                  <div class="modal-dialog">
-                      <div class="modal-content">
-                          <div class="modal-header">
-                              <h1 class="modal-title fs-5" id="staticBackdropLabel">Register new bug</h1>
-                              <button type="button" class="btn-close" data-bs-dismiss="modal"
-                                      aria-label="Close"></button>
-                          </div>
-                          <div class="modal-body">
-                              {{ wtf.quick_form(form, novalidate=True, button_map={"submit":"primary"}) }}
-                          </div>
-                      </div>
-                  </div>
+        <!-- Modal -->
+        <div class="modal fade" id="staticBackdrop" data-bs-backdrop="static" data-bs-keyboard="false"
+             tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
+          <div class="modal-dialog">
+            <div class="modal-content">
+              <div class="modal-header">
+                <h1 class="modal-title fs-5" id="staticBackdropLabel">Register new bug</h1>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"
+                        aria-label="Close"></button>
               </div>
-              {% endif %}
-              <!-- End Modal -->
+              <div class="modal-body">
+                {{ wtf.quick_form(form, novalidate=True, button_map={"submit":"primary"}) }}
+              </div>
+            </div>
           </div>
-      </div>
-        <nav>
-            <ol class="breadcrumb">
-                <li class="breadcrumb-item"><a href="index.html">Home</a></li>
-                <li class="breadcrumb-item">Pages</li>
-                <li class="breadcrumb-item active">Blank</li>
-            </ol>
-        </nav>
-    </div>
-
-      <!-- End Page Title -->
-
-    <section class="section">
-      <div class="row">
-        <div class="col">
-
-         <table class="table table-hover">
-                <thead>
-                  <tr>
-                    <th scope="col">Id</th>
-                    <th scope="col">Project</th>
-                    <th scope="col">Bug</th>
-                    <th scope="col">Created</th>
-                    <th scope="col">Status</th>
-                    <th scope="col">Assigned</th>
-                    <th scope="col">Priority</th>
-                  </tr>
-                </thead>
-                <tbody>
-                {% for bug in bugs %}
-                  <tr id="tr-{{ bug.id }}">
-                    <th scope="row">{{ bug.id }}</th>
-                    <td>{{ bug.project_id }}</td>
-                    <td><a href="{{ url_for('bug', index=bug.id) }}">{{ bug.title }}</a></td>
-                    <td>{{ bug.date }}</td>
-                    <td>
-                    {% if bug.status == 0 %}
-                      <span class="badge rounded-pill bg-danger">New</span>
-                    {% elif bug.status == 1 %}
-                      <span class="badge rounded-pill bg-info text-dark">In progress</span>
-                    {% elif bug.status == 2 %}
-                      <span class="badge rounded-pill bg-warning text-dark">In review</span>
-                    {% elif bug.status == 3 %}
-                      <span class="badge rounded-pill bg-success">Completed</span>
-                    {% endif %}
-                    </td>
-                    <td>{{ bug.assigned.name }}</td>
-                    <td>{{ bug.priority }}</td>
-                  </tr>
-                {% endfor %}
-                </tbody>
-              </table>
-
         </div>
+        {% endif %}
+        <!-- End Modal -->
+      </div>
+    </div>
+    <nav>
+      <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="index.html">Home</a></li>
+        <li class="breadcrumb-item">Pages</li>
+        <li class="breadcrumb-item active">Blank</li>
+      </ol>
+    </nav>
+  </div>
 
+  <!-- End Page Title -->
+
+  <section class="section">
+    <div class="row">
+      <div class="col">
+
+        <table class="table table-hover">
+          <thead>
+          <tr>
+            <th scope="col">Id</th>
+            <th scope="col">Project</th>
+            <th scope="col">Bug</th>
+            <th scope="col">Created</th>
+            <th scope="col">Status</th>
+            <th scope="col">Assigned</th>
+            <th scope="col">Priority</th>
+          </tr>
+          </thead>
+          <tbody>
+          {% for bug in bugs %}
+          <tr id="tr-{{ bug.id }}">
+            <th scope="row">{{ bug.id }}</th>
+            <td>{{ bug.project_id }}</td>
+            <td><a href="{{ url_for('bug', index=bug.id) }}">{{ bug.title }}</a></td>
+            <td>{{ bug.date }}</td>
+            <td>
+              {% if bug.status == 0 %}
+              <span class="badge rounded-pill bg-danger">New</span>
+              {% elif bug.status == 1 %}
+              <span class="badge rounded-pill bg-info text-dark">In progress</span>
+              {% elif bug.status == 2 %}
+              <span class="badge rounded-pill bg-warning text-dark">In review</span>
+              {% elif bug.status == 3 %}
+              <span class="badge rounded-pill bg-success">Completed</span>
+              {% endif %}
+            </td>
+            <td>{{ bug.assigned.name }}</td>
+            <td>{{ bug.priority }}</td>
+          </tr>
+          {% endfor %}
+          </tbody>
+        </table>
 
       </div>
-    </section>
 
-  </main>
+
+    </div>
+  </section>
+
+</main>
 
 <!-- End #main -->
 
