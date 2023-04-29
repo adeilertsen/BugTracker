@@ -14,45 +14,59 @@
   <div class="pagetitle">
     <div class="row">
       <div class="col-6">
-        <h1>Main Page</h1>
-      </div>
-      {% if logged_in %}
-      <div class="col-6 d-flex justify-content-end">
-        <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#staticBackdrop">
-          Register new bug
-        </button>
-
-        <!-- Modal -->
-        <div class="modal fade" id="staticBackdrop" data-bs-backdrop="static" data-bs-keyboard="false"
-             tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
-          <div class="modal-dialog">
-            <div class="modal-content">
-              <div class="modal-header">
-                <h1 class="modal-title fs-5" id="staticBackdropLabel">Register new bug</h1>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"
-                        aria-label="Close"></button>
-              </div>
-              <div class="modal-body">
-                {{ wtf.quick_form(form, novalidate=True, button_map={"submit":"primary"}) }}
-              </div>
-            </div>
-          </div>
-        </div>
-        {% endif %}
-        <!-- End Modal -->
+        <h1>{{ current_project.name }}</h1>
       </div>
     </div>
-    <nav>
-      <ol class="breadcrumb">
-        <li class="breadcrumb-item"><a href="index.html">Home</a></li>
-        <li class="breadcrumb-item">Pages</li>
-        <li class="breadcrumb-item active">Blank</li>
-      </ol>
-    </nav>
   </div>
 
   <!-- End Page Title -->
 
+  <!-- Project Information -->
+  <section class="section">
+    <div class="row">
+      <div class="col">
+        <table class="table">
+          <tbody>
+            <tr>
+              <th scope="row">Created By</th>
+              <td colspan="2">{{ current_project.creator }}</td>
+            </tr>
+            <tr>
+              <th scope="row">Total numbers of bugs</th>
+              <td colspan="2">{{ current_project.bugs|length }}</td>
+            </tr>
+            <!--
+            <tr>
+              <th scope="row">Numbers of bugs fixed</th>
+              <td colspan="2">6</td>
+            </tr>
+            <tr>
+              <th scope="row">Numbers of bugs remaining</th>
+              <td colspan="2">4</td>
+            </tr>
+            -->
+          </tbody>
+        </table>
+      </div>
+      <div class="col">
+        <table class="table">
+          <thead>
+            <th scope="row">Users assigned:</th>
+          </thead>
+          <tbody>
+          {% for user in project.users %}
+            <tr>
+              <td colspan="2">{{ user.name }}</td>
+            </tr>
+          {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+  <!-- End Project Information -->
+
+  <!-- Bugs Table -->
   <section class="section">
     <div class="row">
       <div class="col">
@@ -71,6 +85,7 @@
           </thead>
           <tbody>
           {% for bug in bugs %}
+          {% if bug.project_id == current_project.name %}
           <tr id="tr-{{ bug.id }}">
             <td data-label="Id" scope="row">{{ bug.id }}</td>
             <td data-label="Project">{{ bug.project_id }}</td>
@@ -90,6 +105,7 @@
             <td data-label="Assigned">{{ bug.assigned.name }}</td>
             <td class="table-data-hidden" data-label="Priority">{{ bug.priority }}</td>
           </tr>
+          {% endif %}
           {% endfor %}
           </tbody>
         </table>

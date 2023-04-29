@@ -43,7 +43,7 @@ class Bug(db.Model):
     status = db.Column(db.Integer, nullable=False)
     priority = db.Column(db.String(250), nullable=False)
     project_id = db.Column(db.String, db.ForeignKey("project.name"))
-
+    project = relationship("Project", back_populates="bugs")
     comment = relationship("Comment", back_populates="parent_bug")
     assigned = relationship("User", back_populates="bugs")
 
@@ -80,6 +80,8 @@ class Project(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(250), nullable=False, unique=True)
     users = db.relationship("User", secondary=project_user, back_populates="projects")
+    creator = db.Column(db.String, db.ForeignKey("user.name"))
+    bugs = relationship("Bug", back_populates="project")
 
 
 with app.app_context():
@@ -104,6 +106,11 @@ class NewBugForm(FlaskForm):
     submit = SubmitField("Register")
 
 
+class NewProjectForm(FlaskForm):
+    title = StringField("Title", validators=[DataRequired()])
+    submit = SubmitField("Register")
+
+
 class CommentForm(FlaskForm):
     body = TextAreaField("Leave your comment here:", validators=[DataRequired()])
     submit = SubmitField("Comment")
@@ -112,6 +119,7 @@ class CommentForm(FlaskForm):
 @app.route("/", methods=["GET", "POST"])
 def home():
     bugs_data = db.session.query(Bug).all()
+    project_data = db.session.query(Project).all()
     for user in db.session.query(User).all():
         if user.name not in ASSIGN:
             ASSIGN.append(user.name)
@@ -135,7 +143,7 @@ def home():
         print("entry successfull")
         return redirect(url_for("home"))
     print("nothing yet")
-    return render_template("index.html", form=form, logged_in=current_user.is_authenticated, bugs=bugs_data)
+    return render_template("index.html", form=form, logged_in=current_user.is_authenticated, bugs=bugs_data, project=project_data)
 
 
 @app.route("/register", methods=["GET", "POST"])
@@ -177,6 +185,7 @@ def login():
 
 @app.route("/bug/<int:index>", methods=["GET", "POST"])
 def bug(index):
+    project_data = db.session.query(Project).all()
     bugs_data = db.session.query(Bug).all()
     bug = Bug.query.get(index)
     comment_form = CommentForm()
@@ -210,7 +219,7 @@ def bug(index):
         db.session.commit()
         return redirect(url_for("bug", index=index))
     return render_template("bug.html", bug=bug, form=edit_form, comment_form=comment_form, comments=comments,
-                           logged_in=current_user.is_authenticated, bugs=bugs_data)
+                           logged_in=current_user.is_authenticated, bugs=bugs_data, project=project_data)
 
 
 @app.route("/delete/<int:bug_id>")
@@ -242,16 +251,28 @@ def status_change(bug_id):
     db.session.commit()
     return redirect(url_for("bug", index=bug_id))
 
-@app.route("/projects", methods=["GET", "POST"])
-def create_projects():
-    project1 = Project(name="BugTracker")
-    project2 = Project(name="MyPortfolio")
-    project3 = Project(name="Test")
-    db.session.add(project1)
-    db.session.add(project2)
-    db.session.add(project3)
-    db.session.commit()
-    return redirect(url_for("home"))
+
+@app.route("/project/<int:index>", methods=["GET", "POST"])
+def project(index):
+    bugs_data = db.session.query(Bug).all()
+    project_data = db.session.query(Project).all()
+    project = Project.query.get(index)
+    return render_template("project.html", bugs=bugs_data, project=project_data, current_project=project, logged_in=current_user.is_authenticated)
+
+
+@app.route("/newproject", methods=["GET", "POST"])
+def create_project():
+    form = NewProjectForm()
+    if form.validate_on_submit():
+        new_project = Project(
+            name=form.title.data,
+            creator=current_user.name
+        )
+        db.session.add(new_project)
+        db.session.commit()
+        return redirect(url_for("home"))
+    return render_template("new-project.html", form=form)
+
 
 if __name__ == "__main__":
     app.run(host='0.0.0.0', port=5000)

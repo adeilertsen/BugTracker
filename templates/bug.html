@@ -19,11 +19,13 @@
         <li class="breadcrumb-item active">ID</li>
       </ol>
     </nav>
-  </div><!-- End Page Title -->
+  </div>
 
   <section class="section">
     <div class="row">
       <div class="col-lg-6">
+
+        <!-- BUG INFORMATION -->
 
         <div class="card border-primary mb-3">
           <div class="card-header">#{{ bug.id }}</div>
@@ -103,12 +105,13 @@
               {% endif %}
             </a>
             {% endif %}
+
+            <!-- EDIT BUG -->
+
             {% if logged_in %}
-            <button type="button" class="btn btn-outline-primary" data-bs-toggle="modal"
-                    data-bs-target="#staticBackdrop">
-              Edit
-            </button>
-              {% endif %}
+            <a type="button" class="btn btn-outline-primary" data-bs-toggle="modal"
+                    data-bs-target="#staticBackdrop">Edit</a>
+            {% endif %}
             <div class="modal fade" id="staticBackdrop" data-bs-backdrop="static" data-bs-keyboard="false"
                  tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
               <div class="modal-dialog">
@@ -130,6 +133,9 @@
           </div>
         </div>
       </div>
+
+      <!-- COMMENT SECTION -->
+
       <div class="col-lg-6">
         <div class="card border-primary mb-3">
           <div class="card-header">#</div>
@@ -137,9 +143,9 @@
             <h5 class="card-title">Comments</h5>
             <ul class="commentList">
               {% for comment in comments: %}
-              <li class="row comment-div">
-                <div class="col-2">
-                  <img src="{{ comment.comment_author.email | gravatar }}"/>
+              <li class="row comment-div d-flex flex-wrap align-items-center">
+                <div class="col-2 ">
+                  <img class="img-fluid" src="{{ comment.comment_author.email | gravatar }}"/>
                 </div>
                 <div class="col-9">
                   <p class="comment-text">{{ comment.text | safe }}</p>

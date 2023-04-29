@@ -220,10 +220,10 @@
         <i class="bi bi-menu-button-wide"></i><span>Projects</span><i class="bi bi-chevron-down ms-auto"></i>
       </a>
       <ul id="components-nav" class="nav-content collapse " data-bs-parent="#sidebar-nav">
-        {% for project in bugs %}
+        {% for project in project %}
         <li>
-          <a href="">
-            <i class="bi bi-circle"></i><span>{{ project }}</span>
+          <a href="{{ url_for('project', index=project.id) }}">
+            <i class="bi bi-circle"></i><span>{{ project.name }}</span>
           </a>
         </li>
         {% endfor %}
@@ -235,26 +235,15 @@
         <i class="bi bi-journal-text"></i><span>My Bugs</span><i class="bi bi-chevron-down ms-auto"></i>
       </a>
       <ul id="forms-nav" class="nav-content collapse " data-bs-parent="#sidebar-nav">
+        {% for bug in bugs %}
+        {% if bug.assigned == current_user %}
         <li>
-          <a href="">
-            <i class="bi bi-circle"></i><span>Form Elements</span>
+          <a href="{{ url_for('bug', index=bug.id) }}">
+            <i class="bi bi-circle"></i><span>{{ bug.title }}</span>
           </a>
         </li>
-        <li>
-          <a href="">
-            <i class="bi bi-circle"></i><span>Form Layouts</span>
-          </a>
-        </li>
-        <li>
-          <a href="">
-            <i class="bi bi-circle"></i><span>Form Editors</span>
-          </a>
-        </li>
-        <li>
-          <a href="">
-            <i class="bi bi-circle"></i><span>Form Validation</span>
-          </a>
-        </li>
+        {% endif %}
+        {% endfor %}
       </ul>
     </li><!-- End Forms Nav -->
 

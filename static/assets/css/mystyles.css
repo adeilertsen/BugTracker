@@ -14,3 +14,26 @@
     padding: 1rem;
 
 }
+
+.commentList {
+    padding: 0;
+}
+
+@media screen and (max-width: 600px) {
+  table thead {
+    display: none;
+  }
+  table td {
+    display: flex;
+  }
+  .table-data-hidden {
+    visibility: hidden;
+  }
+
+  table td::before {
+    content: attr(data-label);
+    font-weight: bold;
+    width: 120px;
+    min-width: 120px;
+  }
+}
