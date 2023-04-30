@@ -1,15 +1,12 @@
 from flask import Flask, render_template, redirect, url_for, flash, request
-from flask_sqlalchemy import SQLAlchemy
-from flask_login import UserMixin, login_user, LoginManager, login_required, current_user, logout_user
+from flask_login import login_user, LoginManager, current_user, logout_user
 from flask_bootstrap import Bootstrap
-from sqlalchemy.orm import relationship
-from flask_wtf import FlaskForm
-from wtforms import StringField, SubmitField, SelectField, TextAreaField
-from wtforms.validators import DataRequired
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_gravatar import Gravatar
 from datetime import date
 import os
+from forms import *
+from db import *
 
 
 app = Flask(__name__)
@@ -17,7 +14,6 @@ app.config['SECRET_KEY'] = os.environ.get("SECRET_KEY", "8BYkEfBA6O6donzWlSihBXo
 
 Bootstrap(app)
 
-db = SQLAlchemy()
 app.config["SQLALCHEMY_DATABASE_URI"] = os.environ.get("DATABASE_URL", 'sqlite:///bugtracker.db' )
 db.init_app(app)
 
@@ -33,87 +29,8 @@ def load_user(user_id):
     return User.query.get(int(user_id))
 
 
-class Bug(db.Model):
-    __tablename__ = "bug"
-    id = db.Column(db.Integer, primary_key=True)
-    title = db.Column(db.String(250), nullable=False)
-    description = db.Column(db.String(250), nullable=False)
-    reporter = db.Column(db.String, db.ForeignKey("user.name"))
-    date = db.Column(db.String(250), nullable=False)
-    status = db.Column(db.Integer, nullable=False)
-    priority = db.Column(db.String(250), nullable=False)
-    project_id = db.Column(db.String, db.ForeignKey("project.name"))
-    project = relationship("Project", back_populates="bugs")
-    comment = relationship("Comment", back_populates="parent_bug")
-    assigned = relationship("User", back_populates="bugs")
-
-
-project_user = db.Table("project_user",
-                        db.Column("user_id", db.Integer, db.ForeignKey("user.id")),
-                        db.Column("project_id", db.Integer, db.ForeignKey("project.id"))
-                        )
-
-
-class User(UserMixin, db.Model):
-    __tablename__ = "user"
-    id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(250), nullable=False, unique=True)
-    email = db.Column(db.String(250), unique=True, nullable=False)
-    password = db.Column(db.String(250), nullable=False)
-    bugs = relationship("Bug", back_populates="assigned")
-    comments = relationship("Comment", back_populates="comment_author")
-    projects = db.relationship("Project", secondary=project_user, back_populates="users")
-
-
-class Comment(db.Model):
-    __tablename__ = "comment"
-    id = db.Column(db.Integer, primary_key=True)
-    text = db.Column(db.Text, nullable=False)
-    author_id = db.Column(db.String, db.ForeignKey("user.name"))
-    bug_id = db.Column(db.Integer, db.ForeignKey("bug.id"))
-    comment_author = relationship("User", back_populates="comments")
-    parent_bug = relationship("Bug", back_populates="comment")
-
-
-class Project(db.Model):
-    __tablename__ = "project"
-    id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(250), nullable=False, unique=True)
-    users = db.relationship("User", secondary=project_user, back_populates="projects")
-    creator = db.Column(db.String, db.ForeignKey("user.name"))
-    bugs = relationship("Bug", back_populates="project")
-
-
 with app.app_context():
     db.create_all()
-
-PRIORITY = ["Low", "Medium", "High"]
-ASSIGN = []
-PROJECT = []
-with app.app_context():
-    for user in db.session.query(User).all():
-        ASSIGN.append(user.name)
-    for project in db.session.query(Project).all():
-        PROJECT.append(project.name)
-
-
-class NewBugForm(FlaskForm):
-    title = StringField("Title", validators=[DataRequired()])
-    description = StringField("Description", validators=[DataRequired()])
-    project = SelectField("Choose Project", choices=PROJECT)
-    assign = SelectField("Assign Dev", choices=ASSIGN)
-    priority = SelectField("Priority", choices=PRIORITY)
-    submit = SubmitField("Register")
-
-
-class NewProjectForm(FlaskForm):
-    title = StringField("Title", validators=[DataRequired()])
-    submit = SubmitField("Register")
-
-
-class CommentForm(FlaskForm):
-    body = TextAreaField("Leave your comment here:", validators=[DataRequired()])
-    submit = SubmitField("Comment")
 
 
 @app.route("/", methods=["GET", "POST"])
@@ -140,9 +57,7 @@ def home():
         )
         db.session.add(new_bug)
         db.session.commit()
-        print("entry successfull")
         return redirect(url_for("home"))
-    print("nothing yet")
     return render_template("index.html", form=form, logged_in=current_user.is_authenticated, bugs=bugs_data, project=project_data)
 
 
