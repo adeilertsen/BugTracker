@@ -37,3 +37,7 @@
     min-width: 120px;
   }
 }
+
+.error-msg {
+    background-color: red;
+}

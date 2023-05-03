@@ -1,12 +1,9 @@
-from flask import Flask, render_template, redirect, url_for, flash, request
-from flask_login import login_user, LoginManager, current_user, logout_user
+from flask import Flask, render_template, redirect, url_for, flash
+from flask_login import LoginManager, logout_user
 from flask_bootstrap import Bootstrap
-from werkzeug.security import generate_password_hash, check_password_hash
 from flask_gravatar import Gravatar
-from datetime import date
 import os
-from forms import *
-from db import *
+from functions import *
 
 
 app = Flask(__name__)
@@ -35,121 +32,80 @@ with app.app_context():
 
 @app.route("/", methods=["GET", "POST"])
 def home():
-    bugs_data = db.session.query(Bug).all()
-    project_data = db.session.query(Project).all()
-    for user in db.session.query(User).all():
-        if user.name not in ASSIGN:
-            ASSIGN.append(user.name)
-    for project in db.session.query(Project).all():
-        if project.name not in PROJECT:
-            PROJECT.append(project.name)
+    bugs_data = get_table_data(Bug)
+    project_data = get_table_data(Project)
+
+    update_form_choices(ASSIGN, User)
+    update_form_choices(PROJECT, Project)
+
     form = NewBugForm()
     if form.validate_on_submit():
-        new_bug = Bug(
-            title=form.title.data,
-            description=form.description.data,
-            reporter=current_user.name,
-            status=0,
-            date=date.today(),
-            assigned=User.query.filter_by(name=form.assign.data).first(),
-            priority=form.priority.data,
-            project_id=form.project.data
-        )
-        db.session.add(new_bug)
-        db.session.commit()
+        new_bug = get_bugform_data(form)
+        add_item_to_db(new_bug)
         return redirect(url_for("home"))
-    return render_template("index.html", form=form, logged_in=current_user.is_authenticated, bugs=bugs_data, project=project_data)
+
+    return render_template("index.html", form=form, logged_in=current_user.is_authenticated, bugs=bugs_data,
+                           project=project_data)
 
 
 @app.route("/register", methods=["GET", "POST"])
 def register():
-    if request.method == "POST":
-        email = request.form['email']
-        password = generate_password_hash(request.form['password'], "pbkdf2:sha256", 8)
-        if User.query.filter_by(email=email).first():
+    if form_is_submitted():
+        if user_exist():
             flash("You've already signed up with that email, log in instead!")
             return redirect(url_for("login"))
-        new_user = User(
-            name=request.form['name'],
-            email=email,
-            password=password
-        )
-        db.session.add(new_user)
-        db.session.commit()
-        login_user(new_user)
+        add_user_to_db()
         return redirect(url_for("home"))
     return render_template("register.html", logged_in=current_user.is_authenticated)
 
 
 @app.route("/login", methods=["GET", "POST"])
 def login():
-    if request.method == "POST":
-        user = User.query.filter_by(email=request.form["username"]).first()
-        password = request.form["password"]
-        if not user:
+    if form_is_submitted():
+        if not user_exist():
             flash("No user with that email")
             return redirect(url_for("login"))
-        elif not check_password_hash(user.password, password):
+        elif not is_password_correct():
             flash("Incorrect Password")
             return redirect(url_for("login"))
         else:
-            login_user(user)
+            login_user(get_user())
             return redirect(url_for("home"))
     return render_template("login.html", logged_in=current_user.is_authenticated)
 
 
 @app.route("/bug/<int:index>", methods=["GET", "POST"])
 def bug(index):
-    project_data = db.session.query(Project).all()
-    bugs_data = db.session.query(Bug).all()
-    bug = Bug.query.get(index)
-    comment_form = CommentForm()
-    comments = db.session.query(Comment).filter_by(bug_id=index)
-    edit_form = NewBugForm(
-        title=bug.title,
-        description=bug.description,
-        project=bug.project_id,
-        assign=bug.assigned,
-        priority=bug.priority,
-    )
-    if edit_form.validate_on_submit():
-        bug.title = edit_form.title.data
-        bug.description = edit_form.description.data
-        bug.project_id = edit_form.project.data
-        bug.assigned = User.query.filter_by(name=edit_form.assign.data).first()
-        bug.priority = edit_form.priority.data
-        db.session.commit()
-        return redirect(url_for("bug", index=index))
-    if comment_form.validate_on_submit():
-        if not current_user.is_authenticated:
-            flash("You need to login or register to comment.")
-            return redirect(url_for("post"))
+    project_data = get_table_data(Project)
+    bugs_data = get_table_data(Bug)
 
-        new_comment = Comment(
-            text=comment_form.body.data,
-            comment_author=current_user,
-            parent_bug=bug
-        )
-        db.session.add(new_comment)
-        db.session.commit()
+    current_bug = Bug.query.get(index)
+    bug_comments = current_bug.comment
+
+    comment_form = CommentForm()
+    edit_form = fill_edit_form(current_bug)
+    if edit_form.validate_on_submit():
+        update_bug(current_bug, edit_form)
         return redirect(url_for("bug", index=index))
-    return render_template("bug.html", bug=bug, form=edit_form, comment_form=comment_form, comments=comments,
+
+    if comment_form.validate_on_submit():
+        new_comment = get_commentform_data(comment_form, current_bug)
+        add_item_to_db(new_comment)
+        return redirect(url_for("bug", index=index))
+
+    return render_template("bug.html", bug=current_bug, form=edit_form, comment_form=comment_form, comments=bug_comments,
                            logged_in=current_user.is_authenticated, bugs=bugs_data, project=project_data)
 
 
 @app.route("/delete/<int:bug_id>")
 def delete(bug_id):
-    bug_to_delete = Bug.query.get(bug_id)
-    db.session.delete(bug_to_delete)
-    db.session.commit()
+    delete_bug(bug_id)
     return redirect(url_for("home"))
 
 
 @app.route("/delete-comment/<int:comment_id>")
-def delete_comment(comment_id):
-    comment_to_delete = Comment.query.get(comment_id)
-    db.session.delete(comment_to_delete)
-    db.session.commit()
+def delete_bug_comment(comment_id):
+    delete_comment(comment_id)
     return redirect(url_for("home"))
 
 
@@ -161,16 +117,14 @@ def logout():
 
 @app.route("/status/<int:bug_id>", methods=["GET", "POST"])
 def status_change(bug_id):
-    bug = Bug.query.get(bug_id)
-    bug.status = bug.status + 1
-    db.session.commit()
+    change_bug_status(bug_id)
     return redirect(url_for("bug", index=bug_id))
 
 
 @app.route("/project/<int:index>", methods=["GET", "POST"])
 def project(index):
-    bugs_data = db.session.query(Bug).all()
-    project_data = db.session.query(Project).all()
+    bugs_data = get_table_data(Bug)
+    project_data = get_table_data(Project)
     project = Project.query.get(index)
     return render_template("project.html", bugs=bugs_data, project=project_data, current_project=project, logged_in=current_user.is_authenticated)
 
@@ -179,13 +133,10 @@ def project(index):
 def create_project():
     form = NewProjectForm()
     if form.validate_on_submit():
-        new_project = Project(
-            name=form.title.data,
-            creator=current_user.name
-        )
-        db.session.add(new_project)
-        db.session.commit()
+        new_project = get_projectform_data(form)
+        add_item_to_db(new_project)
         return redirect(url_for("home"))
+
     return render_template("new-project.html", form=form)
 
 
